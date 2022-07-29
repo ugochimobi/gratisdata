@@ -1,5 +1,5 @@
-# wikidata
+# gratisdata
 
-Scripts for Wikidata.
+Scripts for Gratisdata.
 
 Requirements: pywikibot.
