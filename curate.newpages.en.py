@@ -25,27 +25,27 @@ from pywikibot import pagegenerators
 from wikidatafun import *
 
 def addImportedFrom(repo='', claim='', lang=''):
-    langs = { 'en': 'Q328', 'fr': 'Q8447', 'de': 'Q48183', }
+    langs = { 'en': 'Q17', 'es': 'Q3481', }
     if repo and claim and lang and lang in langs.keys():
-        importedfrom = pywikibot.Claim(repo, 'P143') #imported from
+        importedfrom = pywikibot.Claim(repo, 'P193') #imported from
         importedwp = pywikibot.ItemPage(repo, langs[lang])
         importedfrom.setTarget(importedwp)
-        claim.addSource(importedfrom, summary='BOT - Adding 1 reference: [[Property:P143]]: [[%s]]' % (langs[lang]))
+        claim.addSource(importedfrom, summary='BOT - Adding 1 reference: [[Property:P193]]: [[%s]]' % (langs[lang]))
 
 def addHumanClaim(repo='', item='', lang=''):
     if repo and item and lang:
         print("Adding claim: human")
-        claim = pywikibot.Claim(repo, 'P31')
-        target = pywikibot.ItemPage(repo, 'Q5')
+        claim = pywikibot.Claim(repo, 'P3')
+        target = pywikibot.ItemPage(repo, 'Q4')
         claim.setTarget(target)
         item.addClaim(claim, summary='BOT - Adding 1 claim')
         addImportedFrom(repo=repo, claim=claim, lang=lang)
 
 def addGenderClaim(repo='', item='', gender='', lang=''):
-    gender2q = { 'female': 'Q6581072', 'male': 'Q6581097' }
+    gender2q = { 'female': 'Q6', 'male': 'Q5' }
     if repo and item and gender and gender in gender2q.keys() and lang:
         print("Adding gender: %s" % (gender))
-        claim = pywikibot.Claim(repo, 'P21')
+        claim = pywikibot.Claim(repo, 'P4')
         target = pywikibot.ItemPage(repo, gender2q[gender])
         claim.setTarget(target)
         item.addClaim(claim, summary='BOT - Adding 1 claim')
@@ -54,12 +54,12 @@ def addGenderClaim(repo='', item='', gender='', lang=''):
 def addBirthDateClaim(repo='', item='', date='', lang=''):
     if repo and item and date and lang:
         print("Adding birth date: %s" % (date))
-        return addDateClaim(repo=repo, item=item, claim='P569', date=date, lang=lang)
+        return addDateClaim(repo=repo, item=item, claim='P26', date=date, lang=lang)
 
 def addDeathDateClaim(repo='', item='', date='', lang=''):
     if repo and item and date and lang:
         print("Adding death date: %s" % (date))
-        return addDateClaim(repo=repo, item=item, claim='P570', date=date, lang=lang)
+        return addDateClaim(repo=repo, item=item, claim='P132', date=date, lang=lang)
 
 def addDateClaim(repo='', item='', claim='', date='', lang=''):
     if repo and item and claim and date and lang:
@@ -77,7 +77,7 @@ def addOccupationsClaim(repo='', item='', occupations=[], lang=''):
     if repo and item and occupations and lang:
         for occupation in occupations:
             print("Adding occupation: %s" % (occupation.title().encode('utf-8')))
-            claim = pywikibot.Claim(repo, 'P106')
+            claim = pywikibot.Claim(repo, 'P6')
             target = pywikibot.ItemPage(repo, occupation.title())
             claim.setTarget(target)
             item.addClaim(claim, summary='BOT - Adding 1 claim')
@@ -88,7 +88,7 @@ def authorIsNewbie(page='', lang=''):
         #hist = page.getVersionHistory(reverse=True, total=1)
         hist = page.revisions(reverse=True, total=1)
         if hist:
-            editcount = getUserEditCount(user=[h.user for h in hist][0], site='%s.wikipedia.org' % (lang))
+            editcount = getUserEditCount(user=[h.user for h in hist][0], site='gratispaideia.miraheze.org' % (lang))
             if editcount >= 200:
                 return False
     return True
@@ -112,7 +112,7 @@ def calculateGender(page='', lang=''):
             return 'female'
         elif re.findall(r'(?im)\b(Category|Kategorie)\s*:\s*Mann\s*[\]\|]', page.text):
             return 'male'
-    elif lang == 'fr':
+    elif lang == 'es':
         return '' #todo: ne nee
     return ''
 
@@ -152,7 +152,7 @@ def calculateDeathDate(page='', lang=''):
 
 def calculateOccupations(wikisite='', page='', lang=''):
     ignoreoccupations = [
-        'Q2066131', #sportpeople, too general
+        'Q2915', #sportpeople, too general
     ]
     occupations = []
     if wikisite and page:
@@ -174,12 +174,12 @@ def calculateOccupations(wikisite='', page='', lang=''):
                 continue
             catitem.get()
             if catitem.claims:
-                if 'P4224' in catitem.claims:
-                    for p4224 in catitem.claims['P4224']:
-                        if p4224.getTarget().title() != 'Q5':
+                if 'P1' in catitem.claims:
+                    for p1 in catitem.claims['P1']:
+                        if p1.getTarget().title() != 'Q4':
                             continue
-                        if 'P106' in p4224.qualifiers:
-                            qualifier = p4224.qualifiers['P106']
+                        if 'P6' in p1.qualifiers:
+                            qualifier = p1.qualifiers['P6']
                             occ = qualifier[0].getTarget()
                             if not occ.title() in ignoreoccupations:
                                 occupations.append(occ)
@@ -249,23 +249,23 @@ def addBiographyClaims(repo='', wikisite='', item='', page='', lang=''):
         except:
             print('Error while retrieving item, skiping...')
             return ''
-        if not 'P31' in item.claims:
+        if not 'P3' in item.claims:
             addHumanClaim(repo=repo, item=item, lang=lang)
-        if not 'P21' in item.claims and gender:
+        if not 'P4' in item.claims and gender:
             addGenderClaim(repo=repo, item=item, gender=gender, lang=lang)
-        if not 'P569' in item.claims and birthdate:
+        if not 'P26' in item.claims and birthdate:
             addBirthDateClaim(repo=repo, item=item, date=birthdate, lang=lang)
-        if not 'P570' in item.claims and deathdate:
+        if not 'P132' in item.claims and deathdate:
             addDeathDateClaim(repo=repo, item=item, date=deathdate, lang=lang)
-        if not 'P106' in item.claims and occupations:
+        if not 'P6' in item.claims and occupations:
             addOccupationsClaim(repo=repo, item=item, occupations=occupations, lang=lang)
 
 def qIsDisambig(item=""):
     try:
         item.get()
-        if 'P31' in item.claims:
-            for p31 in item.claims['P31']:
-                if p31.getTarget().title() == "Q4167410":
+        if 'P3' in item.claims:
+            for p3 in item.claims['P3']:
+                if p3.getTarget().title() == "Q510":
                     return True
     except:
         print('Error while retrieving item, skiping...')
@@ -273,7 +273,7 @@ def qIsDisambig(item=""):
     return False
 
 def main():
-    wdsite = pywikibot.Site('wikidata', 'wikidata')
+    wdsite = pywikibot.Site('en', 'gratisdata')
     repo = wdsite.data_repository()
     total = 200
     #langs = ['en', 'fr', 'de']
@@ -285,9 +285,9 @@ def main():
         else:
             total = 200
         for lang in langs:
-            wikisite = pywikibot.Site(lang, 'wikipedia')
+            wikisite = pywikibot.Site(lang, 'gratispaideia')
             gen = pagegenerators.NewpagesPageGenerator(site=wikisite, namespaces=[0], total=total)
-            #cat = pywikibot.Category(wikisite, 'Category:Articles without Wikidata item')
+            #cat = pywikibot.Category(wikisite, 'Category:Articles without Gratisdata item')
             #gen = pagegenerators.CategorizedPageGenerator(cat, recurse=False)
             pre = pagegenerators.PreloadingGenerator(gen, groupsize=50)
             for page in pre:
@@ -306,7 +306,7 @@ def main():
                     pass
                 if item:
                     print('Page has item')
-                    print('https://www.wikidata.org/wiki/%s' % (item.title()))
+                    print('https://gratisdata.miraheze.org/wiki/%s' % (item.title()))
                     if qIsDisambig(item=item):
                         print('Item is disambig, skiping...')
                         continue
@@ -326,7 +326,7 @@ def main():
                     print(page.title().encode('utf-8'), 'need item', gender)
                     wtitle = page.title()
                     wtitle_ = wtitle.split('(')[0].strip()
-                    searchitemurl = 'https://www.wikidata.org/w/api.php?action=wbsearchentities&search=%s&language=%s&format=xml' % (urllib.parse.quote(wtitle_), lang)
+                    searchitemurl = 'https://gratisdata.miraheze.org/w/api.php?action=wbsearchentities&search=%s&language=%s&format=xml' % (urllib.parse.quote(wtitle_), lang)
                     raw = getURL(searchitemurl)
                     print(searchitemurl.encode('utf-8'))
                     
@@ -354,9 +354,9 @@ def main():
                             if not pagebirthyear:
                                 print("Page doesnt have birthdate, skiping")
                                 break #break, dont continue. Without birthdate we cant decide correctly
-                            if 'P569' in itemfound.claims and itemfound.claims['P569'][0].getTarget().precision in [9, 10, 11]:
+                            if 'P569' in itemfound.claims and itemfound.claims['P26'][0].getTarget().precision in [9, 10, 11]:
                                 #https://www.wikidata.org/wiki/Help:Dates#Precision
-                                itemfoundbirthyear = int(itemfound.claims['P569'][0].getTarget().year)
+                                itemfoundbirthyear = int(itemfound.claims['P26'][0].getTarget().year)
                                 print("candidate birthdate = %s, page birthdate = %s" % (itemfoundbirthyear, pagebirthyear))
                                 mindatelen = 4
                                 if len(str(itemfoundbirthyear)) != mindatelen or len(str(pagebirthyear)) != mindatelen:
